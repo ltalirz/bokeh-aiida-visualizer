@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 from __future__ import absolute_import
-from setuptools import setup
+from setuptools import setup, find_packages
 
 if __name__ == '__main__':
     # Provide static information in setup.json
     # such that it can be discovered automatically
     setup(
-        packages=["detail", "figure"],
+        packages=find_packages(),
         name="bokeh-aiida-visualizer",
         author="Leopold Talirz",
         author_email="info@materialscloud.org",
