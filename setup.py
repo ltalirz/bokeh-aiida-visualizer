@@ -8,10 +8,10 @@ if __name__ == '__main__':
     # such that it can be discovered automatically
     setup(
         packages=["detail", "figure"],
-        name="bokeh-discover-section",
+        name="bokeh-aiida-visualizer",
         author="Leopold Talirz",
         author_email="info@materialscloud.org",
-        description="A template for DISCOVER sections using bokeh server.",
+        description="Visualizer written for AiiDA molsim tutorial 2019",
         license="MIT",
         classifiers=["Programming Language :: Python"],
         version="0.1.0",
