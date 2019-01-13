@@ -10,7 +10,6 @@ def get_data(projections, sliders_dict, quantities, plot_info):
 
     # remove entries containing None
     results = [ r for r in results if None not in r ]
-    print(results[0])
 
     nresults = len(results)
     if not results:
@@ -24,6 +23,7 @@ def get_data(projections, sliders_dict, quantities, plot_info):
         plot_info.text = "{} MOFs found.\nPlotting {}...".format(
             nresults, nresults)
 
+    print(results[0])
     tmp = zip(*results)
     # x,y position
     for i in [2,3,4]:
