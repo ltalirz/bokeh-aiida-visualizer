@@ -1,0 +1,7 @@
+# Specify filters
+---
+#- dimensions
+#- bond_type
+- deliverable_capacity
+- Density
+- ASA_m^2/cm^3
