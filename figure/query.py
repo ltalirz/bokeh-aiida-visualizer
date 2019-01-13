@@ -6,45 +6,30 @@ from config import max_points
 data_empty = dict(x=[0], y=[0], uuid=['1234'], color=[0], name=['no data'])
 
 def get_data(projections, sliders_dict, quantities, plot_info):
-    results = get_data_aiida(projections, sliders_dict, quantities, plot_info)
+    results, order = get_data_aiida(projections, sliders_dict, quantities, plot_info)
 
     # remove entries containing None
-    print(results[0])
-    print(results[300])
     results = [ r for r in results if None not in r ]
     print(results[0])
 
-
     nresults = len(results)
     if not results:
-        plot_info.text = "No matching COFs found."
+        plot_info.text = "No matching MOFs found."
         return data_empty
     elif nresults > max_points:
         results = results[:max_points]
-        plot_info.text = "{} COFs found.\nPlotting {}...".format(
+        plot_info.text = "{} MOFs found.\nPlotting {}...".format(
             nresults, max_points)
     else:
-        plot_info.text = "{} COFs found.\nPlotting {}...".format(
+        plot_info.text = "{} MOFs found.\nPlotting {}...".format(
             nresults, nresults)
 
+    tmp = zip(*results)
     # x,y position
-    #x, y, clrs, names, filenames = zip(*results)
-    identifiers, names, x, y, clrs = zip(*results)
-    #x, y, clrs, uuids, names, cif_uuids = zip(*qb.all())
-    x = list(map(float, x))
-    y = list(map(float, y))
+    for i in [2,3,4]:
+        tmp[i] = list(map(float, tmp[i]))
     #cif_uuids = map(str, cif_uuids)
-    #uuids = map(str, uuids)
-
-
-    if projections[2] == 'bond_type':
-        #clrs = map(lambda clr: bondtypes.index(clr), clrs)
-        clrs = list(map(str, clrs))
-    else:
-        clrs = list(map(float, clrs))
-
-    return dict(x=x, y=y, color=clrs, identifier=identifiers, name=names)
-    #return dict(x=x, y=y, uuid=cif_uuids, color=clrs, name=names)
+    return { order[i]: tmp[i] for i in range(5) }
 
 
 def get_data_sqla(projections, sliders_dict, quantities, plot_info):
@@ -57,7 +42,7 @@ def get_data_sqla(projections, sliders_dict, quantities, plot_info):
     from sqlalchemy.sql import select, and_
 
     # identifer is the filename column in sqla table
-    projections[0] = 'filename'
+    projections = ['filename', 'name'] + projections
 
     Table = automap_table(engine)
 
@@ -78,6 +63,7 @@ def get_data_sqla(projections, sliders_dict, quantities, plot_info):
 
     s = select(selections).where(and_(*filters))
 
+    order = [ 'identifier', 'name', 'x', 'y', 'color' ]
     return engine.connect().execute(s).fetchall()
 
 
@@ -89,16 +75,10 @@ def get_data_aiida(projections, sliders_dict, quantities, plot_info):
         load_dbenv(profile=settings.AIIDADB_PROFILE)
     from aiida.orm import Group, QueryBuilder, DataFactory, CalculationFactory, WorkCalculation
 
-    print(projections)
-    #projections = ['Density', 'ASA_A^2', 'Number_of_channels'
-    #       ,'Input_structure_filename']
-
     ## identifer is the uuid attribute in aiida 
-    #projections[0] = 'uuid'
-    ## name is the label attribute in aiida 
-    #projections[1] = 'label'
-    #for i in range(2,5):
-    #    projections[i] = 'attributes.{}'.format(projections[i])
+
+    projections = [ 'attributes.{}'.format(p) for p in projections ]
+    print(projections)
 
     filters = {}
 
@@ -134,15 +114,17 @@ def get_data_aiida(projections, sliders_dict, quantities, plot_info):
     qb.append(CifData, project=['uuid', 'attributes.filename'], tag='cifs')
     qb.append(ZeoppCalculation, tag='calc', output_of='cifs')
     #qb.append(ParameterData, project='*', output_of='calc')
-    qb.append(ParameterData, project=[  'attributes.Density', 'attributes.Number_of_channels'], output_of='calc')
+    qb.append(ParameterData, project=[projections[0], projections[2]], output_of='calc')
     qb.append(WorkCalculation, tag='wf', output_of='cifs')
     #qb.append(ParameterData, project='*', output_of='wf')
-    qb.append(ParameterData, project=['attributes.deliverable_capacity'], output_of='wf')
+    qb.append(ParameterData, project=[projections[1]], output_of='wf')
+    qb.limit(20)
     # note: custom projections make the query *extremely* slow
 
     results = qb.all()
     # This reads from the DB!
     #p_dicts = [ row[2].get_dict().update(row[3]).get_dict() for row in results ]
     #p_dicts = [ row[2]._dbnode.attributes.update(row[3]._dbnode.attributes) for row in results ]
+    order = [ 'identifier', 'name', 'x', 'color', 'y']
 
-    return results
+    return results, order

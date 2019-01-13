@@ -2,9 +2,10 @@
 # Keys: x, y, clr + filters
 ---
 default:
-  clr: ASA_m^2/cm^3
   x: Density
   y: deliverable_capacity
+  #clr: ASA_m^2/cm^3
+  clr: Number_of_channels
   deliverable_capacity:
   - 175
   - 300

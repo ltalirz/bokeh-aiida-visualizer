@@ -93,7 +93,7 @@ inp_x = Select(title='X', options=plot_options)
 inp_y = Select(title='Y', options=plot_options)
 #inp_clr = Select(title='Color', options=plot_options)
 inp_clr = Select(
-    title='Color', options=plot_options + [('bond_type', 'Bond type')])
+    title='Color', options=plot_options + [('Number_of_channels', 'Number of Channelstype')])
 
 
 def on_filter_change(attr, old, new):  # pylint: disable=unused-argument
@@ -236,23 +236,19 @@ def update_legends(ly):
     xhover = (q_x["label"], "@x {}".format(q_x["unit"]))
     yhover = (q_y["label"], "@y {}".format(q_y["unit"]))
 
-    if inp_clr.value == 'bond_type':
-        clr_label = "Bond type"
-        hover.tooltips = [
-            ("name", "@name"),
-            xhover,
-            yhover,
-            ("Bond type", "@color"),
-        ]
+    q_clr = quantities[inp_clr.value]
+    if 'unit' not in q_clr.keys():
+        clr_label = q_clr["label"]
+        clr_val = "@color"
     else:
-        q_clr = quantities[inp_clr.value]
+        clr_val = "@color {}".format(q_clr['unit'])
         clr_label = "{} [{}]".format(q_clr["label"], q_clr["unit"])
-        hover.tooltips = [
-            ("name", "@name"),
-            xhover,
-            yhover,
-            (q_clr["label"], "@color {}".format(q_clr["unit"])),
-        ]
+    hover.tooltips = [
+        ("name", "@name"),
+        xhover,
+        yhover,
+        (q_clr["label"], clr_val),
+    ]
 
     p.xaxis.axis_label = xlabel
     p.yaxis.axis_label = ylabel
@@ -289,7 +285,7 @@ def update():
 
     #update_legends(l)
 
-    projections = ['identifier', 'name', inp_x.value, inp_y.value, inp_clr.value]
+    projections = [inp_x.value, inp_y.value, inp_clr.value]
 
     source.data = get_data(projections, filters_dict, quantities, plot_info)
 
