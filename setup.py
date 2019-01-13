@@ -7,8 +7,8 @@ if __name__ == '__main__':
     # Provide static information in setup.json
     # such that it can be discovered automatically
     setup(
-        # don't actually install them (or add static yml files to manifest!)
-        packages=[],
+        # Note: For actual installation, need to add packages to MANIFEST.in!
+        packages=find_packages,
         name="bokeh-aiida-visualizer",
         author="Leopold Talirz",
         author_email="info@materialscloud.org",
