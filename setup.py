@@ -8,7 +8,7 @@ if __name__ == '__main__':
     # such that it can be discovered automatically
     setup(
         # Note: For actual installation, need to add packages to MANIFEST.in!
-        packages=find_packages,
+        packages=find_packages(),
         name="bokeh-aiida-visualizer",
         author="Leopold Talirz",
         author_email="info@materialscloud.org",
