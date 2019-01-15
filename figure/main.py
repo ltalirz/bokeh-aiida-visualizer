@@ -88,12 +88,13 @@ bondtypes = list(config.bondtype_dict.keys())
 bondtype_colors = list(config.bondtype_dict.values())
 
 # quantity selectors
-plot_options = [(q, quantities[q]['label']) for q in config.plot_quantities]
-inp_x = Select(title='X', options=plot_options)
-inp_y = Select(title='Y', options=plot_options)
-#inp_clr = Select(title='Color', options=plot_options)
+float_options = [(q, quantities[q]['label']) for q in config.plot_quantities]
+inp_x = Select(title='X', options=float_options)
+inp_y = Select(title='Y', options=float_options)
+#inp_clr = Select(title='Color', options=float_options)
+list_options = [(q, quantities[q]['label']) for q in  config.list_quantities + config.plot_quantities]
 inp_clr = Select(
-    title='Color', options=plot_options + [('Number_of_channels', 'Number of Channelstype')])
+    title='Color', options=list_options)
 
 
 def on_filter_change(attr, old, new):  # pylint: disable=unused-argument
@@ -191,11 +192,22 @@ def create_plot():
     p_new.title.text_font_size = '10pt'
     p_new.title.text_font_style = 'italic'
 
-    if inp_clr.value == 'bond_type':
+    q_clr = quantities[inp_clr.value]
+    if q_clr['type'] == 'list':
+        #from bokeh.transform import factor_cmap
+        #paper_palette = list(config.bondtype_dict.values())
+        #fill_color = factor_cmap(
+        #    'color', palette=paper_palette, factors=bondtypes)
         from bokeh.transform import factor_cmap
-        paper_palette = list(config.bondtype_dict.values())
-        fill_color = factor_cmap(
-            'color', palette=paper_palette, factors=bondtypes)
+        factors = list(set(source.data['color']))
+        #print(factors)
+        try:
+            fill_color = factor_cmap(
+                'color', palette=Viridis256, factors=factors)
+        except ValueError:
+            # if we don't have data in the source yet
+            fill_color = 'red'
+
         p_new.circle(
             'x',
             'y',
@@ -212,7 +224,10 @@ def create_plot():
         p_new.circle('x', 'y', size=10, source=source, fill_color=fill_color)
         cbar = bmd.ColorBar(color_mapper=cmap, location=(0, 0))
         #cbar.color_mapper = bmd.LinearColorMapper(palette=Viridis256)
+
+        # disable colorbar if there are too many results!
         p_new.add_layout(cbar, 'right')
+
 
     return p_new
 
@@ -220,15 +235,16 @@ def create_plot():
 p = create_plot()
 
 # inp_preset
-controls = [inp_x, inp_y, inp_clr] + [_v for k, _v in filters_dict.items()
-                                      ] + [btn_plot, plot_info]
+#controls = [inp_x, inp_y, inp_clr] + [_v for k, _v in filters_dict.items()
+# ] + [btn_plot, plot_info]
+controls = [btn_plot, plot_info]
 
 
 def update_legends(ly):
 
     q_x = quantities[inp_x.value]
     q_y = quantities[inp_y.value]
-    p = ly.children[0].children[1]
+    p = ly.children[0]
 
     #title = "{} vs {}".format(q_x["label"], q_y["label"])
     xlabel = "{} [{}]".format(q_x["label"], q_x["unit"])
@@ -294,7 +310,7 @@ def update():
         figure = create_plot()
         #TO DO: for some reason this destroys the coupling to source.data
         # to figure out why (and then restrict this to actual redrawing scenarios)
-        l.children[0].children[1] = figure
+        l.children[0] = figure
         redraw_plot = False
 
     update_legends(l)
@@ -329,8 +345,8 @@ sizing_mode = 'fixed'
 inputs = widgetbox(*controls, sizing_mode=sizing_mode)
 l = layout(
     [
-        [inputs, p],
-        [info_block],
+        p,
+        inputs,
     ], sizing_mode=sizing_mode)
 update()
 

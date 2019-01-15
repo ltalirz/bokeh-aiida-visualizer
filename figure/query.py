@@ -25,9 +25,22 @@ def get_data(projections, sliders_dict, quantities, plot_info):
 
     print(results[0])
     tmp = zip(*results)
+
+    # sqla uses UUID type instead of str
+    tmp[0] = list(map(str, tmp[0]))
     # x,y position
-    for i in [2,3,4]:
+    for i in [2,3]:
         tmp[i] = list(map(float, tmp[i]))
+
+    # replace user_id with email
+    from aiida.orm import User
+    user_ids = set(tmp[-1])
+    emails = {}
+    for user_id in user_ids:
+        user = User.search_for_users(id=user_id)[0]
+        emails[user_id] = user.email
+    tmp[-1] = [ emails[i] for i in tmp[-1] ]
+
     #cif_uuids = map(str, cif_uuids)
     return { order[i]: tmp[i] for i in range(5) }
 
@@ -114,17 +127,17 @@ def get_data_aiida(projections, sliders_dict, quantities, plot_info):
     qb.append(CifData, project=['uuid', 'attributes.filename'], tag='cifs')
     qb.append(ZeoppCalculation, tag='calc', output_of='cifs')
     #qb.append(ParameterData, project='*', output_of='calc')
-    qb.append(ParameterData, project=[projections[0], projections[2]], output_of='calc')
+    qb.append(ParameterData, project=[projections[0]], output_of='calc')
     qb.append(WorkCalculation, tag='wf', output_of='cifs')
     #qb.append(ParameterData, project='*', output_of='wf')
-    qb.append(ParameterData, project=[projections[1]], output_of='wf')
-    qb.limit(20)
+    qb.append(ParameterData, project=[projections[1], 'user_id'], output_of='wf')
+    #qb.limit(100)
     # note: custom projections make the query *extremely* slow
 
     results = qb.all()
     # This reads from the DB!
     #p_dicts = [ row[2].get_dict().update(row[3]).get_dict() for row in results ]
     #p_dicts = [ row[2]._dbnode.attributes.update(row[3]._dbnode.attributes) for row in results ]
-    order = [ 'identifier', 'name', 'x', 'color', 'y']
+    order = [ 'identifier', 'name', 'x', 'y', 'color']
 
     return results, order

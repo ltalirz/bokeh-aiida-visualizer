@@ -25,13 +25,19 @@
   - 7
   - 8
 
+- column: user_email
+  type: list
+  label: User email
+  values:
+  - aliaksandr.yakutovich@epfl.ch
+
 - column: Density
   type: float
   label: Density
   range:
   - 10.0
   - 1200.0
-  unit: kg/m^3
+  unit: g/cm^3
    
 #- column: supercell_volume
 #  type: float
@@ -43,7 +49,7 @@
 #
 - column: ASA_m^2/cm^3
   type: float
-  label: Geometric surface area
+  label: Accessible surface area
   range:
   - 0.0
   - 12000.0
@@ -52,7 +58,7 @@
 - column: deliverable_capacity
   type: float
   default:
-  - 175
+  - 0.0
   - 300
   label: Deliverable capacity
   range:

@@ -5,7 +5,8 @@ default:
   x: Density
   y: deliverable_capacity
   #clr: ASA_m^2/cm^3
-  clr: Number_of_channels
+  #clr: Number_of_channels
+  clr: user_email
   deliverable_capacity:
   - 175
   - 300

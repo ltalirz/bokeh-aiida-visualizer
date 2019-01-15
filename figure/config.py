@@ -11,6 +11,8 @@ quantities = collections.OrderedDict([(q['column'], q) for q in quantity_list])
 
 plot_quantities = [ q for q in quantities.keys() if quantities[q]['type'] == 'float' ]
 
+list_quantities = [ q for q in quantities.keys() if quantities[q]['type'] == 'list' ]
+
 bondtype_dict = collections.OrderedDict([
     ('amide', "#1f77b4"),
     ('amine', "#d62728"),
