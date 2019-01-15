@@ -135,21 +135,51 @@ def get_data_aiida(projections, sliders_dict, quantities, plot_info):
     manager.scan()
     ZeoppCalculation = CalculationFactory('zeopp.network')
 
+    #qb = QueryBuilder()
+    #qb.append(CifData, project=['uuid', 'attributes.filename'], tag='cifs')
+    #qb.append(ZeoppCalculation, tag='calc', output_of='cifs')
+    ##qb.append(ParameterData, project='*', output_of='calc')
+    #qb.append(ParameterData, project=[projections[0]], output_of='calc')
+    #qb.append(WorkCalculation, tag='wf', output_of='cifs')
+    ##qb.append(ParameterData, project='*', output_of='wf')
+    #qb.append(ParameterData, project=[projections[1], 'user_id'], output_of='wf')
+    ##qb.limit(100)
+    ## note: custom projections make the query *extremely* slow
+
+    #results = qb.all()
+    ## This reads from the DB!
+    ##p_dicts = [ row[2].get_dict().update(row[3]).get_dict() for row in results ]
+    ##p_dicts = [ row[2]._dbnode.attributes.update(row[3]._dbnode.attributes) for row in results ]
+
     qb = QueryBuilder()
     qb.append(CifData, project=['uuid', 'attributes.filename'], tag='cifs')
     qb.append(ZeoppCalculation, tag='calc', output_of='cifs')
-    #qb.append(ParameterData, project='*', output_of='calc')
     qb.append(ParameterData, project=[projections[0]], output_of='calc')
-    qb.append(WorkCalculation, tag='wf', output_of='cifs')
-    #qb.append(ParameterData, project='*', output_of='wf')
-    qb.append(ParameterData, project=[projections[1], 'user_id'], output_of='wf')
-    #qb.limit(100)
-    # note: custom projections make the query *extremely* slow
 
-    results = qb.all()
-    # This reads from the DB!
-    #p_dicts = [ row[2].get_dict().update(row[3]).get_dict() for row in results ]
-    #p_dicts = [ row[2]._dbnode.attributes.update(row[3]._dbnode.attributes) for row in results ]
+    zeopp_res = {i[0]:i[1:] for i in  qb.all() if None not in i}
+    #print zeopp_res
+
+    qb = QueryBuilder()
+    qb.append(CifData, project=['uuid'], tag='cifs')
+    qb.append(WorkCalculation, tag='wf', output_of='cifs')
+    qb.append(ParameterData, project=[projections[1], 'user_id'], output_of='wf')
+
+    dc_res = {i[0]:i[1:] for i in  qb.all() if None not in i}
+    #print dc_res
+
+    results = []
+    for key, value in dc_res.items():
+        try:
+            results.append([key] + zeopp_res[key] + value)
+        except KeyError:
+            pass
+            #print "No zeo++ calculations for the {} node".format(key)
+
+                         
+
+
+
     order = [ 'identifier', 'name', 'x', 'y', 'color']
 
+    print(results[0])
     return results, order
