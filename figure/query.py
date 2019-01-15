@@ -5,11 +5,20 @@ from config import max_points
 # pylint: disable=too-many-locals
 data_empty = dict(x=[0], y=[0], uuid=['1234'], color=[0], name=['no data'])
 
-def get_data(projections, sliders_dict, quantities, plot_info):
+def get_data(projections, sliders_dict, quantities, plot_info, hide_results=True):
     results, order = get_data_aiida(projections, sliders_dict, quantities, plot_info)
 
     # remove entries containing None
     results = [ r for r in results if None not in r ]
+
+    from aiida.orm import User
+    if hide_results:
+        # hide entries from sasha
+        try:
+            user = User.search_for_users(email='aliaksandr.yakutovich@epfl.ch')[0]
+            results = [ r for r in results if r[-1] != user.id or r[1] == 'HEZKIH.cif' ]
+        except Exception:
+            pass
 
     nresults = len(results)
     if not results:
@@ -33,13 +42,13 @@ def get_data(projections, sliders_dict, quantities, plot_info):
         tmp[i] = list(map(float, tmp[i]))
 
     # replace user_id with email
-    from aiida.orm import User
     user_ids = set(tmp[-1])
     emails = {}
     for user_id in user_ids:
         user = User.search_for_users(id=user_id)[0]
         emails[user_id] = user.email
     tmp[-1] = [ emails[i] for i in tmp[-1] ]
+
 
     #cif_uuids = map(str, cif_uuids)
     return { order[i]: tmp[i] for i in range(5) }
@@ -84,8 +93,11 @@ def get_data_aiida(projections, sliders_dict, quantities, plot_info):
     """Query AiiDA database"""
     from aiida import load_dbenv, is_dbenv_loaded
     from aiida.backends import settings
+    import os
+    profile = os.getenv('AIIDA_BOKEH_PROFILE', settings.AIIDADB_PROFILE)
+    print("Loading AiiDA profile {}".format(profile))
     if not is_dbenv_loaded():
-        load_dbenv(profile=settings.AIIDADB_PROFILE)
+        load_dbenv(profile=profile)
     from aiida.orm import Group, QueryBuilder, DataFactory, CalculationFactory, WorkCalculation
 
     ## identifer is the uuid attribute in aiida 

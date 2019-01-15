@@ -22,6 +22,18 @@ html = bmd.Div(
 
 redraw_plot = False
 
+def get_hide_results_from_url():
+    # Add ?hide_results=0 in order to show all
+    args = curdoc().session_context.request.arguments
+    try:
+        hide_results = bool(int(args.get('hide_results')[0]))
+    except (TypeError, KeyError):
+        hide_results = True
+
+    print("hide_res {}".format(hide_results))
+
+    return hide_results
+
 
 def get_preset_label_from_url():
     # get preset for figure from arguments
@@ -303,7 +315,7 @@ def update():
 
     projections = [inp_x.value, inp_y.value, inp_clr.value]
 
-    source.data = get_data(projections, filters_dict, quantities, plot_info)
+    source.data = get_data(projections, filters_dict, quantities, plot_info, get_hide_results_from_url())
 
     #if redraw_plot:
     if True:  # pylint: disable=using-constant-test
