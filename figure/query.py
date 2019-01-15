@@ -15,8 +15,8 @@ def get_data(projections, sliders_dict, quantities, plot_info, hide_results=True
     if hide_results:
         # hide entries from sasha
         try:
-            user = User.search_for_users(email='aliaksandr.yakutovich@epfl.ch')[0]
-            results = [ r for r in results if r[-1] != user.id or r[1] == 'HEZKIH.cif' ]
+            user = User.search_for_users(email='some.body@xyz.com')[0]
+            results = [ r for r in results if r[-1] != user.id or r[1] == 'HKUST1.cif' ]
         except Exception:
             pass
 
