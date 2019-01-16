@@ -162,23 +162,21 @@ def get_data_aiida(projections, sliders_dict, quantities, plot_info):
     qb = QueryBuilder()
     qb.append(CifData, project=['uuid'], tag='cifs')
     qb.append(WorkCalculation, tag='wf', output_of='cifs')
-    qb.append(ParameterData, project=[projections[1], 'user_id'], output_of='wf')
+    qb.append(ParameterData, project=[projections[1], 'user_id', 'uuid'], output_of='wf')
 
-    dc_res = {i[0]:i[1:] for i in  qb.all() if None not in i}
+    #dc_res = {i[0]:i[1:] for i in  qb.all() if None not in i}
+    # dc_res = { uuid: i[:-1] for i in qb.all() if None not in i}
+    dc_res = { i[-1]: i[:-1] for i in  qb.all() if None not in i}
     #print dc_res
 
     results = []
     for key, value in dc_res.items():
         try:
-            results.append([key] + zeopp_res[key] + value)
+            cif_uuid = value[0]
+            results.append([key] + zeopp_res[cif_uuid] + value[1:])
         except KeyError:
-            pass
-            #print "No zeo++ calculations for the {} node".format(key)
-
-                         
-
-
-
+            print "No zeo++ calculations for the {} node".format(key)
+            #pass
     order = [ 'identifier', 'name', 'x', 'y', 'color']
 
     print(results[0])

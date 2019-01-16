@@ -8,7 +8,7 @@ from os.path import join
 from bokeh.plotting import figure
 from bokeh.layouts import layout, widgetbox
 import bokeh.models as bmd
-from bokeh.palettes import Viridis256
+from bokeh.palettes import Viridis256, Spectral6
 from bokeh.models.widgets import RangeSlider, Select, Button, PreText, CheckboxButtonGroup
 from bokeh.io import curdoc
 
@@ -214,8 +214,7 @@ def create_plot():
         factors = list(set(source.data['color']))
         #print(factors)
         try:
-            fill_color = factor_cmap(
-                'color', palette=Viridis256, factors=factors)
+            fill_color = factor_cmap('color', palette=Spectral6, factors=factors)
         except ValueError:
             # if we don't have data in the source yet
             fill_color = 'red'
