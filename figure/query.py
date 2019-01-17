@@ -173,7 +173,7 @@ def get_data_aiida(projections, sliders_dict, quantities, plot_info):
     for key, value in dc_res.items():
         try:
             cif_uuid = value[0]
-            results.append([key] + zeopp_res[cif_uuid] + value[1:])
+            results.append([cif_uuid] + zeopp_res[cif_uuid] + value[1:])
         except KeyError:
             print "No zeo++ calculations for the {} node".format(key)
             #pass
